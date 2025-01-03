@@ -18,6 +18,7 @@
 #include "BinarySearchTree.hpp"
 #include <cassert>  //assert
 #include <utility>  //pair
+using namespace std;
 
 template <typename Key_type, typename Value_type,
           typename Key_compare=std::less<Key_type> // default argument
@@ -32,6 +33,10 @@ private:
 
   // A custom comparator
   class PairComp {
+    public:
+    bool operator() (const Pair_type& l, const Pair_type& r) const {
+      return Key_compare()(l.first, r.first);
+    }
   };
 
 public:
@@ -59,6 +64,13 @@ public:
   // you should omit them. A user of the class must be able to create,
   // copy, assign, and destroy Maps.
 
+  Map();
+  
+  Map(const Map& other);
+
+  Map& operator=(const Map& other);
+
+  ~Map();
 
   // EFFECTS : Returns whether this Map is empty.
   bool empty() const;
@@ -112,8 +124,71 @@ public:
 
 private:
   // Add a BinarySearchTree private member HERE.
+  BinarySearchTree<Pair_type, PairComp> bst;
 };
 
+template <typename K, typename V, typename C>
+Map<K, V, C>::Map() : bst() {}
+
+template <typename K, typename V, typename C>
+Map<K, V, C>::Map(const Map<K, V, C>& other) : bst(other.bst) {}
+
+template <typename K, typename V, typename C>
+Map<K, V, C>& Map<K, V, C>::operator=(const Map<K, V, C>& other) {
+  if (this != &other) {
+    bst = other.bst;
+  }
+  return *this;
+}
+
+template <typename K, typename V, typename C>
+Map<K, V, C>::~Map() {}
+
+template <typename K, typename V, typename C>
+bool Map<K, V, C>::empty() const {
+  return bst.empty();
+}
+
+template <typename K, typename V, typename C>
+size_t Map<K, V, C>::size() const {
+    return bst.size();
+}
+
+template <typename K, typename V, typename C>
+typename Map<K, V, C>::Iterator Map<K, V, C>::find(const K& k) const {
+  Pair_type p = {k, V()};
+  auto it = bst.find(p);
+  return (it != bst.end()) ? it : end();
+}
+
+template <typename K, typename V, typename C>
+V& Map<K, V, C>::operator[](const K& k) {
+  Pair_type p = {k, V()};
+  auto it = bst.find(p);
+  if (it != bst.end()) {
+    return it->second;
+  }
+  auto result = bst.insert(p);
+  return result->second;
+}
+
+template <typename K, typename V, typename C>
+std::pair<typename Map<K, V, C>::Iterator, bool> 
+Map<K, V, C>::insert(const Pair_type& val) {
+  auto it = bst.insert(val);
+  bool b = (it != bst.end());
+  return {it, b};
+}
+
+template <typename K, typename V, typename C>
+typename Map<K, V, C>::Iterator Map<K, V, C>::begin() const {
+  return bst.begin();
+}
+
+template <typename K, typename V, typename C>
+typename Map<K, V, C>::Iterator Map<K, V, C>::end() const {
+  return bst.end();
+}
 // You may implement member functions below using an "out-of-line" definition
 // or you may simply define them "in-line" in the class definition above.
 // If you choose to define them "out-of-line", here is an example.
